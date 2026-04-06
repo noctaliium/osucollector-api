@@ -45,6 +45,6 @@ public class Card {
     }
 
     public enum Rarity {
-        common, uncommon, rare, epic, legendary
+        common, uncommon, rare, epic, legendary, special
     }
 }
