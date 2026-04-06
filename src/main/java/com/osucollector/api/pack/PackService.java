@@ -98,7 +98,7 @@ public class PackService {
         // 1/4096 for any card in the pack to be rainbow, if it happen to be on the guaranteed foil slot, it will override it
 
         if (currentIndex == foilIndex) {
-            if (RANDOM.nextInt(4096) == 0) return Variant.rainbow;
+            if (RANDOM.nextInt(2048) == 0) return Variant.rainbow;
             return Variant.foil;
         }
 
