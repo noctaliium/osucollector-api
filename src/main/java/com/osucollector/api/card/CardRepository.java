@@ -8,4 +8,5 @@ public interface CardRepository extends JpaRepository<Card, Short> {
     List<Card> findByRarity(Card.Rarity rarity);
     List<Card> findByIsActiveTrue();
     Card findByPlayerName(String playerName);
+    List<Card> findByRarityAndIsActiveTrue(Card.Rarity rarity);
 }

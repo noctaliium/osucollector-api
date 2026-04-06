@@ -3,6 +3,7 @@ package com.osucollector.api.exception;
 import com.osucollector.api.card.CardNotFoundException;
 import com.osucollector.api.user.UserNotFoundException;
 import com.osucollector.api.usercard.UserCardNotFoundException;
+import com.osucollector.api.pack.NoPackAvailableException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,5 +56,17 @@ public class GlobalExceptionHandler {
                     ex.getMessage(),
                     LocalDateTime.now()
             ));
+    }
+
+
+    @ExceptionHandler(NoPackAvailableException.class)
+    public ResponseEntity<ErrorResponse> handleNoPackAvailable(NoPackAvailableException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(
+                        HttpStatus.BAD_REQUEST.value(),
+                        ex.getMessage(),
+                        LocalDateTime.now()
+                ));
     }
 }
