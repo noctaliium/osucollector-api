@@ -20,8 +20,6 @@ public class UserCardService {
     private final UserRepository userRepository;
     private final CardRepository cardRepository;
 
-    // ─── Lecture ────────────────────────────────────────────────────────────────
-
     public List<UserCardDto> getUserCollection(String userId) {
         return userCardRepository.findByUserId(userId)
                 .stream()
@@ -50,7 +48,7 @@ public class UserCardService {
                 .toList();
     }
 
-    // ─── Ajout de carte ─────────────────────────────────────────────────────────
+    // Cards
 
     @Transactional
     public UserCardDto addCardToCollection(String userId, Short cardId, Variant variant) {
@@ -76,7 +74,7 @@ public class UserCardService {
         return UserCardDto.from(userCardRepository.save(userCard));
     }
 
-    // ─── Marques ────────────────────────────────────────────────────────────────
+    // Marks
 
     @Transactional
     public UserCardDto updateMark(String userId, Short cardId, Mark mark) {
@@ -97,8 +95,6 @@ public class UserCardService {
         userCard.setMark(null);
         return UserCardDto.from(userCardRepository.save(userCard));
     }
-
-    // ─── Stats ──────────────────────────────────────────────────────────────────
 
     public long getUniqueCardCount(String userId) {
         return userCardRepository.countByUserId(userId);
