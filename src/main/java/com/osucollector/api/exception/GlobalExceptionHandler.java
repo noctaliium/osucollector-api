@@ -2,6 +2,7 @@ package com.osucollector.api.exception;
 
 import com.osucollector.api.card.CardNotFoundException;
 import com.osucollector.api.user.UserNotFoundException;
+import com.osucollector.api.usercard.UserCardNotFoundException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,5 +44,16 @@ public class GlobalExceptionHandler {
                     ex.getMessage(),
                     LocalDateTime.now()
             ));
-}
+    }
+
+    @ExceptionHandler(UserCardNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserCardNotFound(UserCardNotFoundException ex) {
+    return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(new ErrorResponse(
+                    HttpStatus.NOT_FOUND.value(),
+                    ex.getMessage(),
+                    LocalDateTime.now()
+            ));
+    }
 }
