@@ -1,6 +1,7 @@
 package com.osucollector.api.usercard;
 
 import com.osucollector.api.card.Card;
+import com.osucollector.api.card.CardNotFoundException;
 import com.osucollector.api.card.CardRepository;
 import com.osucollector.api.card.Mark;
 import com.osucollector.api.card.Variant;
@@ -68,7 +69,9 @@ public class UserCardService {
         switch (variant) {
             case normal  -> userCard.setQuantityNormal((short) (userCard.getQuantityNormal() + 1));
             case foil    -> userCard.setQuantityFoil((short) (userCard.getQuantityFoil() + 1));
-            case rainbow -> userCard.setQuantityRainbow((short) (userCard.getQuantityRainbow() + 1));
+            case rainbow -> throw new IllegalArgumentException(
+                "Rainbow cards must be handled separately via PackService"
+            );
         }
 
         return UserCardDto.from(userCardRepository.save(userCard));
@@ -93,6 +96,23 @@ public class UserCardService {
                 .orElseThrow(() -> new UserCardNotFoundException(userId, cardId));
 
         userCard.setMark(null);
+        return UserCardDto.from(userCardRepository.save(userCard));
+    }
+
+    public UserCardDto getOrCreateUserCard(String userId, Short cardId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new CardNotFoundException(cardId));
+
+        UserCard userCard = userCardRepository
+                .findByUserIdAndCardId(userId, cardId)
+                .orElseGet(() -> UserCard.builder()
+                        .id(new UserCardId(userId, cardId))
+                        .user(user)
+                        .card(card)
+                        .build());
+
         return UserCardDto.from(userCardRepository.save(userCard));
     }
 

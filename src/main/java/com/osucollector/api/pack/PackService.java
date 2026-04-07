@@ -6,6 +6,9 @@ import com.osucollector.api.card.Variant;
 import com.osucollector.api.user.User;
 import com.osucollector.api.user.UserNotFoundException;
 import com.osucollector.api.user.UserRepository;
+import com.osucollector.api.usercard.RainbowCard;
+import com.osucollector.api.usercard.RainbowCardRepository;
+import com.osucollector.api.usercard.UserCardDto;
 import com.osucollector.api.usercard.UserCardRepository;
 import com.osucollector.api.usercard.UserCardService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ public class PackService {
     private final UserRepository     userRepository;
     private final CardRepository     cardRepository;
     private final UserCardRepository userCardRepository;
+    private final RainbowCardRepository rainbowCardRepository;
     private final UserCardService    userCardService;
 
     private static final int    CARDS_PER_PACK    = 5;
@@ -56,11 +60,24 @@ public class PackService {
             Variant variant = drawVariant(i, foilIndex);
             boolean isNew   = !userCardRepository.existsByUserIdAndCardId(userId, card.getId());
 
-            drawnCards.add(new PackOpeningResult.DrawnCard(
-                    userCardService.addCardToCollection(userId, card.getId(), variant),
-                    isNew
-            ));
+            UserCardDto userCardDto;
+
+            if (variant == Variant.rainbow) {
+                    int serial = rainbowCardRepository.getNextSerialNumber(card.getId());
+                    rainbowCardRepository.save(RainbowCard.builder()
+                            .card(card)
+                            .owner(user)
+                            .serialNumber(serial)
+                            .build());
+                    userCardDto = userCardService.getOrCreateUserCard(userId, card.getId());
+                } else {
+                    userCardDto = userCardService.addCardToCollection(userId, card.getId(), variant);
+                }
+
+                drawnCards.add(new PackOpeningResult.DrawnCard(userCardDto, isNew));
         }
+
+        updatePityCounters(user, drawnCards);
 
         // Update user data
         user.setStackedPacks((short) (user.getStackedPacks() - 1));

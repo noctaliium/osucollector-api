@@ -6,6 +6,7 @@ import com.osucollector.api.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "user_cards")
@@ -37,9 +38,8 @@ public class UserCard {
     @Column(nullable = false)
     private Short quantityFoil = 0;
 
-    @Builder.Default
-    @Column(nullable = false)
-    private Short quantityRainbow = 0;
+    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
+    private List<RainbowCard> rainbowCards;
 
     @Enumerated(EnumType.STRING)
     private Mark mark;
