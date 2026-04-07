@@ -17,10 +17,10 @@ spring:
       client:
         registration:
           osu:
-            client-id: ${OSU_CLIENT_ID}
-            client-secret: ${OSU_CLIENT_SECRET}
+            client-id: ${osu.client-id}
+            client-secret: ${osu.client-secret}
             authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/api/auth/callback"
+            redirect-uri: "{baseUrl}/login/oauth2/code/osu"
             scope: identify
         provider:
           osu:

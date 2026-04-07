@@ -1,6 +1,7 @@
 package com.osucollector.api.admin;
 
 import com.osucollector.api.card.CardDto;
+import com.osucollector.api.osu.OsuImportService;
 import com.osucollector.api.user.User;
 import com.osucollector.api.user.UserDto;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final OsuImportService osuImportService;
 
     @GetMapping("/stats")
     public ResponseEntity<AdminStatsDto> getGlobalStats() {
@@ -51,4 +53,18 @@ public class AdminController {
             @RequestParam User.Role role) {
         return ResponseEntity.ok(adminService.updateUserRole(id, role));
     }
+
+    @PostMapping("/import/top2000")
+        public ResponseEntity<Void> importTop2000() {
+            // Start the import in a new thread to work in the background
+            new Thread(() -> {
+                try {
+                    osuImportService.importTop2000();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }).start();
+
+            return ResponseEntity.accepted().build();
+        }
 }

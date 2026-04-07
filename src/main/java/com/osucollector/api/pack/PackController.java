@@ -12,7 +12,10 @@ public class PackController {
     private final PackService packService;
 
     @PostMapping("/open")
-    public ResponseEntity<PackOpeningResult> openPack(@PathVariable String userId) {
+    public ResponseEntity<PackOpeningResult> openPack(
+            @PathVariable String userId,
+            @RequestParam(required = false, defaultValue = "all") String packType) {
+        // packType is here for later on when we will have different types of packs
         return ResponseEntity.ok(packService.openPack(userId));
     }
 }

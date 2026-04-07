@@ -1,6 +1,7 @@
 package com.osucollector.api.config;
 
 import com.osucollector.api.auth.JwtAuthFilter;
+import com.osucollector.api.auth.OsuAuthSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,24 +21,29 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthFilter          jwtAuthFilter;
+    private final OsuAuthSuccessHandler  osuAuthSuccessHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                // IMPORTANT : OAuth2 a besoin des sessions pour stocker le state
+                // On ne peut pas être full stateless avec OAuth2 login
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/oauth2/**").permitAll()
+                .requestMatchers("/login/oauth2/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/cards/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth -> oauth
-                .defaultSuccessUrl("/api/auth/callback", true)
+                .successHandler(osuAuthSuccessHandler)
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

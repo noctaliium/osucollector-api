@@ -3,6 +3,7 @@ package com.osucollector.api.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/users")
@@ -34,5 +35,11 @@ public class UserController {
     @GetMapping("/{id}/can-trade")
     public ResponseEntity<Boolean> canTrade(@PathVariable String id) {
         return ResponseEntity.ok(userService.canTrade(id));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDto> getCurrentUser(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        return ResponseEntity.ok(userService.getUserById(userId));
     }
 }

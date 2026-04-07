@@ -49,6 +49,7 @@ public class UserService {
                 .osuUserId(osuUserId)
                 .username(username)
                 .osuRefreshToken(refreshToken)
+                .stackedPacks((short) 10)
                 .build();
     }
 

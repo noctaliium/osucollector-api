@@ -39,7 +39,41 @@ public class Card {
 
     @Column(unique = true)
     private Integer osuUserId;
-    
+
+    @Column(length = 100)
+    private String title; 
+
+    @Column(length = 10)
+    private String countryCode;
+
+    @Column
+    private Integer globalRank;
+
+    @Column(precision = 6, scale = 2)
+    private BigDecimal accuracy;
+
+    @Column
+    @Builder.Default
+    private Boolean isRanked = true;
+
+    @Column
+    private Integer followerCount;
+
+    @Column
+    private Integer mappingFollowerCount;   // subscribers
+
+    @Column
+    private Integer badgeCount;
+
+    @Column
+    private Integer rankedMapCount;
+
+    @Column
+    private Integer lovedMapCount;
+
+    @Column
+    private Integer firstPlaceCount;
+
     public enum Gamemode {
         standard, taiko, catch_the_beat, mania
     }
