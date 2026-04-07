@@ -63,7 +63,7 @@ public class Card {
     private Integer followerCount;
 
     @Column
-    private Integer mappingFollowerCount;   // subscribers
+    private Integer mappingFollowerCount;
 
     @Column
     private Integer badgeCount;

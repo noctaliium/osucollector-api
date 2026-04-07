@@ -27,7 +27,6 @@ public class RainbowCard {
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
-    // Numéro global unique par carte (ex: Motion n°001)
     @Column(nullable = false)
     private Integer serialNumber;
 

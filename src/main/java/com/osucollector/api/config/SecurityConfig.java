@@ -29,8 +29,6 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session
-                // IMPORTANT : OAuth2 a besoin des sessions pour stocker le state
-                // On ne peut pas être full stateless avec OAuth2 login
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))

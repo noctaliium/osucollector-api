@@ -12,6 +12,7 @@ public record OsuUserStats(
         String     avatarUrl,
         BigDecimal pp,
         Integer    globalRank,
+        Integer    countryRank,
         BigDecimal accuracy,
         Boolean    isRanked,
         Integer    followerCount,
@@ -29,25 +30,21 @@ public record OsuUserStats(
         String countryCode = (String) response.get("country_code");
         String avatarUrl  = (String) response.get("avatar_url");
 
-        // Badges — c'est une liste, on compte juste le nombre
         List<?> badges   = (List<?>) response.getOrDefault("badges", List.of());
         int badgeCount   = badges.size();
 
-        // Followers
         Integer followerCount        = toInt(response.get("follower_count"));
         Integer mappingFollowerCount = toInt(response.get("mapping_follower_count"));
 
-        // Maps
         Integer rankedMapCount = toInt(response.get("ranked_and_approved_beatmapset_count"));
         Integer lovedMapCount  = toInt(response.get("loved_beatmapset_count"));
 
-        // Stats de jeu
         Map<String, Object> statistics = (Map<String, Object>) response.get("statistics");
 
         if (statistics == null) {
             return new OsuUserStats(
                 osuUserId, username, title, countryCode, avatarUrl,
-                null, null, null, false,
+                null, null, null, null, false,
                 followerCount, mappingFollowerCount, badgeCount,
                 rankedMapCount, lovedMapCount, null
             );
@@ -55,13 +52,14 @@ public record OsuUserStats(
 
         BigDecimal pp       = toBigDecimal(statistics.get("pp"));
         Integer globalRank  = toInt(statistics.get("global_rank"));
+        Integer countryRank = toInt(statistics.get("country_rank"));
         BigDecimal accuracy = toBigDecimal(statistics.get("hit_accuracy"));
         Boolean isRanked    = (Boolean) statistics.getOrDefault("is_ranked", false);
-        Integer firstPlaceCount = toInt(statistics.get("count_rank_ss")); // first place = #1 scores
+        Integer firstPlaceCount = toInt(statistics.get("count_rank_ss"));
 
         return new OsuUserStats(
                 osuUserId, username, title, countryCode, avatarUrl,
-                pp, globalRank, accuracy, isRanked,
+                pp, globalRank, countryRank, accuracy, isRanked,
                 followerCount, mappingFollowerCount, badgeCount,
                 rankedMapCount, lovedMapCount, firstPlaceCount
         );

@@ -27,8 +27,6 @@ public class OsuApiService {
 
     private String accessToken;
 
-    // ─── Token OAuth client_credentials ─────────────────────────────────────────
-
     private void refreshAccessToken() {
         RestClient client = restClientBuilder.build();
 
@@ -46,8 +44,6 @@ public class OsuApiService {
         accessToken = (String) response.get("access_token");
         log.info("osu! access token refreshed");
     }
-
-    // ─── Récupère une page du classement osu!catch ───────────────────────────────
 
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> fetchRankingPage(int page) {
@@ -73,8 +69,6 @@ public class OsuApiService {
         }
     }
 
-    // ─── Récupère les stats complètes d'un joueur (pour l'import) ────────────────
-
     @SuppressWarnings("unchecked")
     public OsuUserStats fetchFullUserStats(Integer osuUserId) {
         if (accessToken == null) refreshAccessToken();
@@ -98,8 +92,6 @@ public class OsuApiService {
             return null;
         }
     }
-
-    // ─── Récupère les stats basiques d'un joueur (pour les mises à jour) ─────────
 
     @SuppressWarnings("unchecked")
     public OsuUserStats fetchUserStats(Integer osuUserId, Card.Gamemode gamemode) {
@@ -125,8 +117,6 @@ public class OsuApiService {
             return null;
         }
     }
-
-    // ─── Mise à jour automatique toutes les 24h ───────────────────────────────────
 
     @Scheduled(cron = "0 0 3 * * *")
     public void scheduledStatsUpdate() {
@@ -171,8 +161,6 @@ public class OsuApiService {
 
         log.info("Stats update complete — updated: {}, failed: {}", updated, failed);
     }
-
-    // ─── Helpers ─────────────────────────────────────────────────────────────────
 
     private String gamemodeToApiMode(Card.Gamemode gamemode) {
         return switch (gamemode) {
