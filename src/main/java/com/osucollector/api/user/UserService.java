@@ -91,4 +91,12 @@ public class UserService {
 
         return hasOpenedEnoughPacks && cooldownExpired;
     }
+
+    public User loginOrRegisterEntity(Integer osuUserId, String username, String refreshToken) {
+        User user = userRepository.findByOsuUserId(osuUserId)
+                .map(existing -> updateExistingUser(existing, username, refreshToken))
+                .orElseGet(() -> createNewUser(osuUserId, username, refreshToken));
+
+        return userRepository.save(user);
+    }
 }
