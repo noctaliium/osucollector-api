@@ -49,6 +49,9 @@ public class Card {
     @Column
     private Integer globalRank;
 
+    @Column
+    private Integer countryRank;
+
     @Column(precision = 6, scale = 2)
     private BigDecimal accuracy;
 

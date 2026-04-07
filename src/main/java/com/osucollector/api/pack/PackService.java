@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -40,6 +41,15 @@ public class PackService {
             Card.Rarity.epic,      1.0,
             Card.Rarity.legendary, 0.1
     );
+
+    private static final List<Card.Rarity> RARITY_ORDER = List.of(
+        Card.Rarity.common,
+        Card.Rarity.uncommon,
+        Card.Rarity.rare,
+        Card.Rarity.epic,
+        Card.Rarity.legendary,
+        Card.Rarity.special
+    );  
 
     @Transactional
     public PackOpeningResult openPack(String userId) {
@@ -76,6 +86,10 @@ public class PackService {
 
                 drawnCards.add(new PackOpeningResult.DrawnCard(userCardDto, isNew));
         }
+
+        drawnCards.sort(Comparator.comparingInt(
+            drawn -> RARITY_ORDER.indexOf(drawn.userCard().card().rarity())
+        ));
 
         updatePityCounters(user, drawnCards);
 
