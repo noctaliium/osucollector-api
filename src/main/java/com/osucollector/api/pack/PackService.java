@@ -109,4 +109,16 @@ public class PackService {
 
         return Variant.normal;
     }
+
+    private void updatePityCounters(User user, List<PackOpeningResult.DrawnCard> drawnCards) {
+        boolean gotEpic = drawnCards.stream()
+                .anyMatch(d -> d.userCard().card().rarity() == Card.Rarity.epic
+                        || d.userCard().card().rarity() == Card.Rarity.legendary);
+
+        boolean gotLegendary = drawnCards.stream()
+                .anyMatch(d -> d.userCard().card().rarity() == Card.Rarity.legendary);
+
+        user.setPacksWithoutEpic(gotEpic ? 0 : user.getPacksWithoutEpic() + 1);
+        user.setPacksWithoutLegendary(gotLegendary ? 0 : user.getPacksWithoutLegendary() + 1);
+    }
 }

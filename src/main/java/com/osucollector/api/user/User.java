@@ -49,7 +49,15 @@ public class User {
     @Column(nullable = false)
     private Integer coins = 0;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer packsWithoutEpic = 0;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer packsWithoutLegendary = 0;
+
     public enum Role {
-        player, admin
+        player, moderator, admin
     }
 }
