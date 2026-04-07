@@ -5,13 +5,13 @@ spring:
     url: jdbc:postgresql://localhost:5432/osucards
     driver-class-name: org.postgresql.Driver
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
   security:
     oauth2:
       client:

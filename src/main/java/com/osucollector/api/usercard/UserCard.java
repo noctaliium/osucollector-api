@@ -38,9 +38,6 @@ public class UserCard {
     @Column(nullable = false)
     private Short quantityFoil = 0;
 
-    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
-    private List<RainbowCard> rainbowCards;
-
     @Enumerated(EnumType.STRING)
     private Mark mark;
 

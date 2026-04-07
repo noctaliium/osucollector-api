@@ -59,4 +59,11 @@ public class UserCardController {
     public ResponseEntity<Long> getUniqueCardCount(@PathVariable String userId) {
         return ResponseEntity.ok(userCardService.getUniqueCardCount(userId));
     }
+
+    @GetMapping("/{cardId}/rainbows")
+    public ResponseEntity<List<RainbowCardDto>> getRainbowCards(
+            @PathVariable String userId,
+            @PathVariable Short cardId) {
+        return ResponseEntity.ok(userCardService.getRainbowCards(userId, cardId));
+    }
 }

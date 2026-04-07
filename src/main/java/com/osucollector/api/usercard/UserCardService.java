@@ -20,7 +20,8 @@ public class UserCardService {
     private final UserCardRepository userCardRepository;
     private final UserRepository userRepository;
     private final CardRepository cardRepository;
-
+    private final RainbowCardRepository rainbowCardRepository;
+    
     public List<UserCardDto> getUserCollection(String userId) {
         return userCardRepository.findByUserId(userId)
                 .stream()
@@ -118,5 +119,12 @@ public class UserCardService {
 
     public long getUniqueCardCount(String userId) {
         return userCardRepository.countByUserId(userId);
+    }
+
+    public List<RainbowCardDto> getRainbowCards(String userId, Short cardId) {
+        return rainbowCardRepository.findByOwnerIdAndCardId(userId, cardId)
+                .stream()
+                .map(RainbowCardDto::from)
+                .toList();
     }
 }
