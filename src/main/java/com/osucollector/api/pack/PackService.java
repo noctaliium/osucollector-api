@@ -34,6 +34,8 @@ public class PackService {
     private static final int    COINS_PER_PACK    = 20;
     private static final Random RANDOM            = new Random();
 
+    private Card.Rarity forcedNextRarity = null;
+
     private static final Map<Card.Rarity, Double> RARITY_WEIGHTS;
 
     static {
@@ -107,11 +109,29 @@ public class PackService {
     }
 
     private Card drawCard() {
-        Card.Rarity rarity = drawRarity();
-        List<Card> pool    = cardRepository.findByRarityAndIsActiveTrue(rarity);
+        Card.Rarity rarity;
+
+        if (forcedNextRarity != null) {
+            rarity = forcedNextRarity;
+            forcedNextRarity = null;  // reset après usage
+        } else {
+            rarity = drawRarity();
+        }
+
+        List<Card> pool = cardRepository.findByRarityAndIsActiveTrue(rarity);
 
         if (pool.isEmpty()) {
             pool = cardRepository.findByRarityAndIsActiveTrue(Card.Rarity.common);
+        }
+
+        if (pool.isEmpty()) {
+            pool = cardRepository.findAll().stream()
+                    .filter(Card::getIsActive)
+                    .toList();
+        }
+
+        if (pool.isEmpty()) {
+            throw new NoPackAvailableException();
         }
 
         return pool.get(RANDOM.nextInt(pool.size()));
@@ -155,5 +175,9 @@ public class PackService {
 
         user.setPacksWithoutEpic(gotEpic ? 0 : user.getPacksWithoutEpic() + 1);
         user.setPacksWithoutLegendary(gotLegendary ? 0 : user.getPacksWithoutLegendary() + 1);
+    }
+
+    public void setForcedNextRarity(Card.Rarity rarity) {
+        this.forcedNextRarity = rarity;
     }
 }

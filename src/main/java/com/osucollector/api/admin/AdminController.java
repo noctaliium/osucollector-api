@@ -1,8 +1,10 @@
 package com.osucollector.api.admin;
 
+import com.osucollector.api.card.Card;
 import com.osucollector.api.card.CardDto;
 import com.osucollector.api.osu.OsuApiService;
 import com.osucollector.api.osu.OsuImportService;
+import com.osucollector.api.pack.PackService;
 import com.osucollector.api.user.User;
 import com.osucollector.api.user.UserDto;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ public class AdminController {
     private final OsuImportService osuImportService;
     private final OsuApiService osuApiService;
     private final SyncStatusService syncStatusService;
+    private final PackService packService;
     private final RarityScoreService rarityScoreService;
 
     @GetMapping("/stats")
@@ -102,5 +105,11 @@ public class AdminController {
     @PostMapping("/cards/apply-suggestions")
     public ResponseEntity<Integer> applySuggestions() {
         return ResponseEntity.ok(adminService.applyAllRaritySuggestions());
+    }
+    
+    @PostMapping("/debug/force-rarity")
+    public ResponseEntity<Void> forceNextRarity(@RequestParam Card.Rarity rarity) {
+        packService.setForcedNextRarity(rarity);
+        return ResponseEntity.ok().build();
     }
 }
