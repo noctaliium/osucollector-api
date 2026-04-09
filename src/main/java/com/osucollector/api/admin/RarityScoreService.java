@@ -84,9 +84,9 @@ public class RarityScoreService {
         int total = sorted.size();
         if (total == 0) return Card.Rarity.common;
 
-        int epicIdx     = (int) Math.round(total * 0.05) - 1;
-        int rareIdx     = (int) Math.round(total * 0.05 + total * 0.15) - 1;
-        int uncommonIdx = (int) Math.round(total * 0.05 + total * 0.15 + total * 0.30) - 1;
+        int epicIdx     = (int) Math.round(total * EPIC_RATIO) - 1;
+        int rareIdx     = (int) Math.round(total * EPIC_RATIO + total * RARE_RATIO) - 1;
+        int uncommonIdx = (int) Math.round(total * EPIC_RATIO + total * RARE_RATIO + total * UNCOMMON_RATIO) - 1;
 
         int epicMin     = sorted.get(Math.min(epicIdx,     total - 1));
         int rareMin     = sorted.get(Math.min(rareIdx,     total - 1));
@@ -110,9 +110,9 @@ public class RarityScoreService {
         int updated = 0;
 
         int total         = eligibleCards.size();
-        int epicCount     = (int) Math.round(total * 0.05);
-        int rareCount     = (int) Math.round(total * 0.15);
-        int uncommonCount = (int) Math.round(total * 0.30);
+        int epicCount     = (int) Math.round(total * EPIC_RATIO);
+        int rareCount     = (int) Math.round(total * RARE_RATIO);
+        int uncommonCount = (int) Math.round(total * UNCOMMON_RATIO);
 
         for (int i = 0; i < eligibleCards.size(); i++) {
             Card card = eligibleCards.get(i);
