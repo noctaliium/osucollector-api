@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -18,10 +17,10 @@ public class OsuImportService {
     private final OsuApiService  osuApiService;
     private final CardRepository cardRepository;
 
-    @Transactional
     public void importTop2000() throws InterruptedException {
         log.info("Starting top 2000 osu!catch import...");
         int imported = 0;
+        int failed = 0;
 
         for (int page = 1; page <= 40; page++) {
             List<Map<String, Object>> ranking = osuApiService.fetchRankingPage(page);
@@ -35,9 +34,13 @@ public class OsuImportService {
                 OsuUserStats stats = osuApiService.fetchFullUserStats(osuUserId);
                 if (stats == null) continue;
 
-                Card card = buildCardFromStats(stats);
-                cardRepository.save(card);
-                imported++;
+                try {
+                    saveCard(stats);
+                    imported++;
+                } catch (Exception e) {
+                    log.warn("Failed to save card {}: {}", stats.username(), e.getMessage());
+                    failed++;
+                }
 
                 Thread.sleep(100);
             }
@@ -47,6 +50,12 @@ public class OsuImportService {
         }
 
         log.info("Import complete — {} cards imported", imported);
+    }
+
+    @Transactional
+    public void saveCard(OsuUserStats stats) {
+        Card card = buildCardFromStats(stats);
+        cardRepository.save(card);
     }
 
     private Card buildCardFromStats(OsuUserStats stats) {

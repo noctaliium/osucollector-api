@@ -1,5 +1,6 @@
 package com.osucollector.api.pack;
 
+import com.osucollector.api.card.Variant;
 import com.osucollector.api.usercard.UserCardDto;
 import java.util.List;
 
@@ -9,6 +10,8 @@ public record PackOpeningResult(
 ) {
     public record DrawnCard(
             UserCardDto userCard,
-            boolean isNew
+            boolean isNew,
+            Variant variant,
+            Integer serialNumber
     ) {}
 }

@@ -135,6 +135,7 @@ public class OsuApiService {
                 if (stats != null) {
                     card.setPerfPoint(stats.pp());
                     card.setGlobalRank(stats.globalRank());
+                    card.setCountryRank(stats.countryRank());
                     card.setAccuracy(stats.accuracy());
                     card.setIsRanked(stats.isRanked());
                     card.setImageUrl(stats.avatarUrl());

@@ -80,11 +80,11 @@ public class PackService {
                             .serialNumber(serial)
                             .build());
                     userCardDto = userCardService.getOrCreateUserCard(userId, card.getId());
+                    drawnCards.add(new PackOpeningResult.DrawnCard(userCardDto, isNew, variant, serial));
                 } else {
                     userCardDto = userCardService.addCardToCollection(userId, card.getId(), variant);
+                    drawnCards.add(new PackOpeningResult.DrawnCard(userCardDto, isNew, variant, null));
                 }
-
-                drawnCards.add(new PackOpeningResult.DrawnCard(userCardDto, isNew));
         }
 
         drawnCards.sort(Comparator.comparingInt(
@@ -130,7 +130,7 @@ public class PackService {
 
         if (currentIndex == foilIndex) {
             // Rainbow chance is doubled on the guaranteed foil slot
-            if (RANDOM.nextInt(2048) == 0) return Variant.rainbow;
+            if (RANDOM.nextInt(2) == 0) return Variant.rainbow;
             return Variant.foil;
         }
 

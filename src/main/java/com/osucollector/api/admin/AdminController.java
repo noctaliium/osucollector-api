@@ -1,6 +1,7 @@
 package com.osucollector.api.admin;
 
 import com.osucollector.api.card.CardDto;
+import com.osucollector.api.osu.OsuApiService;
 import com.osucollector.api.osu.OsuImportService;
 import com.osucollector.api.user.User;
 import com.osucollector.api.user.UserDto;
@@ -18,6 +19,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final OsuImportService osuImportService;
+    private final OsuApiService osuApiService;
 
     @GetMapping("/stats")
     public ResponseEntity<AdminStatsDto> getGlobalStats() {
@@ -65,6 +67,11 @@ public class AdminController {
                 }
             }).start();
 
+            return ResponseEntity.accepted().build();
+        }
+    @PostMapping("/sync-stats")
+        public ResponseEntity<Void> syncStats() {
+            new Thread(() -> osuApiService.scheduledStatsUpdate()).start();
             return ResponseEntity.accepted().build();
         }
 }
