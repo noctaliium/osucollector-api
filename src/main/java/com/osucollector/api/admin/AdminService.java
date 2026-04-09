@@ -104,27 +104,24 @@ public class AdminService {
     }
 
     public List<CardRarityDto> getCardsWithScores() {
-        List<Card> cards = cardRepository.findAll();
+    List<Card> cards = cardRepository.findAll();
 
-        List<Integer> allScores = cards.stream()
-                .filter(c -> c.getRarity() != Card.Rarity.epic      &&
-                            c.getRarity() != Card.Rarity.legendary  &&
-                            c.getRarity() != Card.Rarity.special)
-                .map(rarityScoreService::calculateScore)
-                .toList();;
+    // Calcule les scores sur TOUTES les cartes sauf special
+    List<Integer> allScores = cards.stream()
+        .filter(c -> c.getRarity() != Card.Rarity.special)
+        .map(rarityScoreService::calculateScore)
+        .toList();
 
-        return cards.stream()
-                .map(card -> {
-                    int score = rarityScoreService.calculateScore(card);
-                    Card.Rarity suggested = (card.getRarity() == Card.Rarity.epic      ||
-                                            card.getRarity() == Card.Rarity.legendary  ||
-                                            card.getRarity() == Card.Rarity.special)
-                            ? card.getRarity()
-                            : rarityScoreService.suggestRarity(score, allScores);
-                    return CardRarityDto.from(card, score, suggested);
-                })
-                .sorted((a, b) -> Integer.compare(b.score(), a.score()))
-                .toList();
+    return cards.stream()
+        .map(card -> {
+            int score = rarityScoreService.calculateScore(card);
+            Card.Rarity suggested = card.getRarity() == Card.Rarity.special
+                ? Card.Rarity.special
+                : rarityScoreService.suggestRarity(score, allScores);
+            return CardRarityDto.from(card, score, suggested);
+        })
+        .sorted((a, b) -> Integer.compare(b.score(), a.score()))
+        .toList();
     }
 
     public int applyAllRaritySuggestions() {

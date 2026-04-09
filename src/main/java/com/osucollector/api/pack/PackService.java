@@ -34,13 +34,17 @@ public class PackService {
     private static final int    COINS_PER_PACK    = 20;
     private static final Random RANDOM            = new Random();
 
-    private static final Map<Card.Rarity, Double> RARITY_WEIGHTS = Map.of(
-            Card.Rarity.common,   59.9,
-            Card.Rarity.uncommon, 30.0,
-            Card.Rarity.rare,      9.0,
-            Card.Rarity.epic,      1.0,
-            Card.Rarity.legendary, 0.1
-    );
+    private static final Map<Card.Rarity, Double> RARITY_WEIGHTS;
+
+    static {
+        RARITY_WEIGHTS = new java.util.LinkedHashMap<>();
+        RARITY_WEIGHTS.put(Card.Rarity.mythic,    0.1);
+        RARITY_WEIGHTS.put(Card.Rarity.legendary, 0.5);
+        RARITY_WEIGHTS.put(Card.Rarity.epic,      2.0);
+        RARITY_WEIGHTS.put(Card.Rarity.rare,     10.0);
+        RARITY_WEIGHTS.put(Card.Rarity.uncommon, 40.0);
+        RARITY_WEIGHTS.put(Card.Rarity.common,   47.4);
+    }
 
     private static final List<Card.Rarity> RARITY_ORDER = List.of(
         Card.Rarity.common,

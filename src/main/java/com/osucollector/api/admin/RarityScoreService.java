@@ -3,10 +3,13 @@ package com.osucollector.api.admin;
 import com.osucollector.api.card.Card;
 import com.osucollector.api.card.CardRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RarityScoreService {
@@ -14,24 +17,26 @@ public class RarityScoreService {
     private final CardRepository cardRepository;
 
     // Constants for score calc
-    private static final double PP_DIVISOR              = 3.0;
-    private static final int    PP_MAX                  = 5000;
-    private static final double FOLLOWERS_DIVISOR       = 5.0;
+    private static final double PP_DIVISOR              = 2.0;
+    private static final int    PP_MAX                  = 15000;
+    private static final double FOLLOWERS_DIVISOR       = 6.0;
     private static final int    FOLLOWERS_MAX           = 2000;
     private static final double MAPPING_FOL_DIVISOR     = 2.0;
     private static final int    MAPPING_FOL_MAX         = 1000;
     private static final int    BADGE_PTS               = 100;
     private static final int    BADGES_MAX              = 500;
-    private static final int    TITLE_PTS               = 300;
-    private static final double MAPS_MULTIPLIER         = 10.0;
-    private static final int    MAPS_MAX                = 500;
+    private static final int    TITLE_PTS               = 800;
+    private static final double MAPS_MULTIPLIER         = 5.0;
+    private static final int    MAPS_MAX                = 2000;
     private static final double FIRST_PLACES_MULTIPLIER = 2.0;
-    private static final int    FIRST_PLACES_MAX        = 500;
+    private static final int    FIRST_PLACES_MAX        = 1500;
 
     // Rarity ratios
-    private static final double EPIC_RATIO     = 0.05;   // top 5%
-    private static final double RARE_RATIO     = 0.15;   // top 15%
-    private static final double UNCOMMON_RATIO = 0.30;   // top 30%
+    private static final double MYTHIC_RATIO   = 0.0025;
+    private static final double LEGENDARY_RATIO = 0.01;
+    private static final double EPIC_RATIO     = 0.05;
+    private static final double RARE_RATIO     = 0.15;
+    private static final double UNCOMMON_RATIO = 0.30;    
 
     public int calculateScore(Card card) {
         int score = 0;
@@ -84,44 +89,64 @@ public class RarityScoreService {
         int total = sorted.size();
         if (total == 0) return Card.Rarity.common;
 
-        int epicIdx     = (int) Math.round(total * EPIC_RATIO) - 1;
-        int rareIdx     = (int) Math.round(total * EPIC_RATIO + total * RARE_RATIO) - 1;
-        int uncommonIdx = (int) Math.round(total * EPIC_RATIO + total * RARE_RATIO + total * UNCOMMON_RATIO) - 1;
+        int mythicCount    = Math.max(1, (int) Math.round(total * MYTHIC_RATIO));
+        int legendaryCount = Math.max(1, (int) Math.round(total * LEGENDARY_RATIO));
+        int epicCount      = Math.max(1, (int) Math.round(total * EPIC_RATIO));
+        int rareCount      = Math.max(1, (int) Math.round(total * RARE_RATIO));
+        int uncommonCount  = Math.max(1, (int) Math.round(total * UNCOMMON_RATIO));
 
-        int epicMin     = sorted.get(Math.min(epicIdx,     total - 1));
-        int rareMin     = sorted.get(Math.min(rareIdx,     total - 1));
-        int uncommonMin = sorted.get(Math.min(uncommonIdx, total - 1));
+        int mythicIdx    = mythicCount - 1;
+        int legendaryIdx = mythicCount + legendaryCount - 1;
+        int epicIdx      = mythicCount + legendaryCount + epicCount - 1;
+        int rareIdx      = mythicCount + legendaryCount + epicCount + rareCount - 1;
+        int uncommonIdx  = mythicCount + legendaryCount + epicCount + rareCount + uncommonCount - 1;
 
-        if (score >= epicMin)     return Card.Rarity.epic;
-        if (score >= rareMin)     return Card.Rarity.rare;
-        if (score >= uncommonMin) return Card.Rarity.uncommon;
+        int mythicMin    = sorted.get(Math.min(mythicIdx,    total - 1));
+        int legendaryMin = sorted.get(Math.min(legendaryIdx, total - 1));
+        int epicMin      = sorted.get(Math.min(epicIdx,      total - 1));
+        int rareMin      = sorted.get(Math.min(rareIdx,      total - 1));
+        int uncommonMin  = sorted.get(Math.min(uncommonIdx,  total - 1));
+
+        if (score >= mythicMin)    return Card.Rarity.mythic;
+        if (score >= legendaryMin) return Card.Rarity.legendary;
+        if (score >= epicMin)      return Card.Rarity.epic;
+        if (score >= rareMin)      return Card.Rarity.rare;
+        if (score >= uncommonMin)  return Card.Rarity.uncommon;
         return Card.Rarity.common;
     }
 
     public int applyAllSuggestions() {
-        List<Card> eligibleCards = cardRepository.findAll().stream()
-                .filter(c -> c.getRarity() != Card.Rarity.epic      &&
-                            c.getRarity() != Card.Rarity.legendary  &&
-                            c.getRarity() != Card.Rarity.special)
-                .sorted((a, b) -> Integer.compare(
-                    calculateScore(b), calculateScore(a)))
+        List<Card> allCards = cardRepository.findAll();
+
+        List<Integer> allScores = allCards.stream()
+                .filter(c -> c.getRarity() != Card.Rarity.special)
+                .map(this::calculateScore)
                 .toList();
 
-        int updated = 0;
+        List<Card> eligibleCards = allCards.stream()
+                .filter(c -> c.getRarity() != Card.Rarity.special)
+                .sorted((a, b) -> Integer.compare(calculateScore(b), calculateScore(a)))
+                .toList();
 
         int total         = eligibleCards.size();
-        int epicCount     = (int) Math.round(total * EPIC_RATIO);
-        int rareCount     = (int) Math.round(total * RARE_RATIO);
-        int uncommonCount = (int) Math.round(total * UNCOMMON_RATIO);
+        int mythicCount   = Math.max(1, (int) Math.round(total * MYTHIC_RATIO));
+        int legendaryCount = Math.max(1, (int) Math.round(total * LEGENDARY_RATIO));
+        int epicCount     = Math.max(1, (int) Math.round(total * EPIC_RATIO));
+        int rareCount     = Math.max(1, (int) Math.round(total * RARE_RATIO));
+        int uncommonCount = Math.max(1, (int) Math.round(total * UNCOMMON_RATIO));
+
+        int updated = 0;
 
         for (int i = 0; i < eligibleCards.size(); i++) {
             Card card = eligibleCards.get(i);
             Card.Rarity newRarity;
 
-            if (i < epicCount) newRarity = Card.Rarity.epic;
-            else if (i < epicCount + rareCount) newRarity = Card.Rarity.rare;
-            else if (i < epicCount + rareCount + uncommonCount) newRarity = Card.Rarity.uncommon;
-            else newRarity = Card.Rarity.common;
+            if      (i < mythicCount)                                                          newRarity = Card.Rarity.mythic;
+            else if (i < mythicCount + legendaryCount)                                         newRarity = Card.Rarity.legendary;
+            else if (i < mythicCount + legendaryCount + epicCount)                             newRarity = Card.Rarity.epic;
+            else if (i < mythicCount + legendaryCount + epicCount + rareCount)                 newRarity = Card.Rarity.rare;
+            else if (i < mythicCount + legendaryCount + epicCount + rareCount + uncommonCount) newRarity = Card.Rarity.uncommon;
+            else                                                                               newRarity = Card.Rarity.common;
 
             if (card.getRarity() != newRarity) {
                 card.setRarity(newRarity);
