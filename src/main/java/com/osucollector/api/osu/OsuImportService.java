@@ -28,7 +28,6 @@ public class OsuImportService {
             for (Map<String, Object> entry : ranking) {
                 Integer osuUserId = ((Number) ((Map<?, ?>) entry.get("user")).get("id")).intValue();
 
-                // Skip if the user already has a card
                 if (cardRepository.existsByOsuUserId(osuUserId)) continue;
 
                 OsuUserStats stats = osuApiService.fetchFullUserStats(osuUserId);

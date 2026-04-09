@@ -122,7 +122,7 @@ public class PackService {
             if (roll < cumul) return entry.getKey();
         }
 
-        return Card.Rarity.common; // fallback
+        return Card.Rarity.common;
     }
 
     private Variant drawVariant(int currentIndex, int foilIndex) {

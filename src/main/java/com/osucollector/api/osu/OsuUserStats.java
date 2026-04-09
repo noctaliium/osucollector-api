@@ -55,7 +55,7 @@ public record OsuUserStats(
         Integer countryRank = toInt(statistics.get("country_rank"));
         BigDecimal accuracy = toBigDecimal(statistics.get("hit_accuracy"));
         Boolean isRanked    = (Boolean) statistics.getOrDefault("is_ranked", false);
-        Integer firstPlaceCount = toInt(statistics.get("count_rank_ss"));
+        Integer firstPlaceCount = toInt(response.get("scores_first_count"));
 
         return new OsuUserStats(
                 osuUserId, username, title, countryCode, avatarUrl,

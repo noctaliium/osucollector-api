@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 import java.util.List;
 
 @RestController
@@ -20,6 +22,8 @@ public class AdminController {
     private final AdminService adminService;
     private final OsuImportService osuImportService;
     private final OsuApiService osuApiService;
+    private final SyncStatusService syncStatusService;
+    private final RarityScoreService rarityScoreService;
 
     @GetMapping("/stats")
     public ResponseEntity<AdminStatsDto> getGlobalStats() {
@@ -57,21 +61,46 @@ public class AdminController {
     }
 
     @PostMapping("/import/top2000")
-        public ResponseEntity<Void> importTop2000() {
-            // Start the import in a new thread to work in the background
-            new Thread(() -> {
-                try {
-                    osuImportService.importTop2000();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }).start();
+    public ResponseEntity<Void> importTop2000() {
+        // Start the import in a new thread to work in the background
+        new Thread(() -> {
+            try {
+                osuImportService.importTop2000();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }).start();
 
-            return ResponseEntity.accepted().build();
-        }
+        return ResponseEntity.accepted().build();
+    }
+
     @PostMapping("/sync-stats")
-        public ResponseEntity<Void> syncStats() {
-            new Thread(() -> osuApiService.scheduledStatsUpdate()).start();
-            return ResponseEntity.accepted().build();
+    public ResponseEntity<String> syncStats() {
+        if (syncStatusService.isSyncRunning()) {
+            return ResponseEntity.status(409).body("Sync already running");
         }
+
+        new Thread(() -> osuApiService.manualStatsUpdate()).start();
+        return ResponseEntity.accepted().body("Sync started");
+    }
+
+    @GetMapping("/sync-stats/stream")
+    public SseEmitter streamSyncStatus() {
+        return syncStatusService.createEmitter();
+    }
+
+    @GetMapping("/cards/scores")
+    public ResponseEntity<List<CardRarityDto>> getCardsWithScores() {
+        return ResponseEntity.ok(adminService.getCardsWithScores());
+    }
+
+    @GetMapping("/score-weights")
+    public ResponseEntity<ScoreWeightsDto> getScoreWeights() {
+        return ResponseEntity.ok(rarityScoreService.getWeights());
+    }
+
+    @PostMapping("/cards/apply-suggestions")
+    public ResponseEntity<Integer> applySuggestions() {
+        return ResponseEntity.ok(adminService.applyAllRaritySuggestions());
+    }
 }

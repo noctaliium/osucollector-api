@@ -1,5 +1,6 @@
 package com.osucollector.api.osu;
 
+import com.osucollector.api.admin.SyncStatusService;
 import com.osucollector.api.card.Card;
 import com.osucollector.api.card.CardRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class OsuApiService {
 
     private final CardRepository     cardRepository;
     private final RestClient.Builder restClientBuilder;
+    private final SyncStatusService syncStatusService;
 
     @Value("${osu.client-id}")
     private String clientId;
@@ -120,9 +122,18 @@ public class OsuApiService {
 
     @Scheduled(cron = "0 0 3 * * *")
     public void scheduledStatsUpdate() {
-        log.info("Starting scheduled osu! stats update...");
+        manualStatsUpdate();
+    }
 
+    public void manualStatsUpdate() {
+        if (!syncStatusService.startSync()) {
+            log.warn("Sync already running, skipping");
+            return;
+        }
+
+        log.info("Starting osu! stats update...");
         List<Card> cards = cardRepository.findAll();
+        int total   = cards.size();
         int updated = 0;
         int failed  = 0;
 
@@ -149,6 +160,11 @@ public class OsuApiService {
                     updated++;
                 }
 
+                // Send progress update every 50 cards
+                if (updated % 50 == 0) {
+                    syncStatusService.sendProgress(updated, total);
+                }
+
                 Thread.sleep(50);
 
             } catch (InterruptedException e) {
@@ -160,6 +176,8 @@ public class OsuApiService {
             }
         }
 
+        syncStatusService.sendComplete(updated, failed);
+        syncStatusService.endSync();
         log.info("Stats update complete — updated: {}, failed: {}", updated, failed);
     }
 
