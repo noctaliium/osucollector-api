@@ -84,17 +84,14 @@ public class RarityScoreService {
         int total = sorted.size();
         if (total == 0) return Card.Rarity.common;
 
-        // Indices de coupure — on prend le score juste après la limite
-        int epicCutoff     = (int) Math.ceil(total * EPIC_RATIO);
-        int rareCutoff     = (int) Math.ceil(total * RARE_RATIO);
-        int uncommonCutoff = (int) Math.ceil(total * UNCOMMON_RATIO);
+        int epicIdx     = (int) Math.round(total * 0.05) - 1;
+        int rareIdx     = (int) Math.round(total * 0.05 + total * 0.15) - 1;
+        int uncommonIdx = (int) Math.round(total * 0.05 + total * 0.15 + total * 0.30) - 1;
 
-        // Seuils minimum pour chaque rareté
-        int epicMin     = sorted.get(Math.min(epicCutoff - 1,     total - 1));
-        int rareMin     = sorted.get(Math.min(rareCutoff - 1,     total - 1));
-        int uncommonMin = sorted.get(Math.min(uncommonCutoff - 1, total - 1));
+        int epicMin     = sorted.get(Math.min(epicIdx,     total - 1));
+        int rareMin     = sorted.get(Math.min(rareIdx,     total - 1));
+        int uncommonMin = sorted.get(Math.min(uncommonIdx, total - 1));
 
-        // Legendary toujours manuel
         if (score >= epicMin)     return Card.Rarity.epic;
         if (score >= rareMin)     return Card.Rarity.rare;
         if (score >= uncommonMin) return Card.Rarity.uncommon;
@@ -102,29 +99,32 @@ public class RarityScoreService {
     }
 
     public int applyAllSuggestions() {
-        List<Card> cards = cardRepository.findAll();
-
-        List<Integer> allScores = cards.stream()
+        List<Card> eligibleCards = cardRepository.findAll().stream()
                 .filter(c -> c.getRarity() != Card.Rarity.epic      &&
-                             c.getRarity() != Card.Rarity.legendary  &&
-                             c.getRarity() != Card.Rarity.special)
-                .map(this::calculateScore)
+                            c.getRarity() != Card.Rarity.legendary  &&
+                            c.getRarity() != Card.Rarity.special)
+                .sorted((a, b) -> Integer.compare(
+                    calculateScore(b), calculateScore(a)))
                 .toList();
 
         int updated = 0;
 
-        for (Card card : cards) {
-            if (card.getRarity() == Card.Rarity.epic      ||
-                card.getRarity() == Card.Rarity.legendary ||
-                card.getRarity() == Card.Rarity.special) {
-                continue;
-            }
+        int total         = eligibleCards.size();
+        int epicCount     = (int) Math.round(total * 0.05);
+        int rareCount     = (int) Math.round(total * 0.15);
+        int uncommonCount = (int) Math.round(total * 0.30);
 
-            int score             = calculateScore(card);
-            Card.Rarity suggested = suggestRarity(score, allScores);
+        for (int i = 0; i < eligibleCards.size(); i++) {
+            Card card = eligibleCards.get(i);
+            Card.Rarity newRarity;
 
-            if (card.getRarity() != suggested) {
-                card.setRarity(suggested);
+            if (i < epicCount) newRarity = Card.Rarity.epic;
+            else if (i < epicCount + rareCount) newRarity = Card.Rarity.rare;
+            else if (i < epicCount + rareCount + uncommonCount) newRarity = Card.Rarity.uncommon;
+            else newRarity = Card.Rarity.common;
+
+            if (card.getRarity() != newRarity) {
+                card.setRarity(newRarity);
                 cardRepository.save(card);
                 updated++;
             }
