@@ -154,7 +154,7 @@ public class PackService {
 
         if (currentIndex == foilIndex) {
             // Rainbow chance is doubled on the guaranteed foil slot
-            if (RANDOM.nextInt(2) == 0) return Variant.rainbow;
+            if (RANDOM.nextInt(2048) == 0) return Variant.rainbow;
             return Variant.foil;
         }
 

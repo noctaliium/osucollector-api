@@ -106,7 +106,6 @@ public class AdminService {
     public List<CardRarityDto> getCardsWithScores() {
     List<Card> cards = cardRepository.findAll();
 
-    // Calcule les scores sur TOUTES les cartes sauf special
     List<Integer> allScores = cards.stream()
         .filter(c -> c.getRarity() != Card.Rarity.special)
         .map(rarityScoreService::calculateScore)
@@ -126,5 +125,16 @@ public class AdminService {
 
     public int applyAllRaritySuggestions() {
         return rarityScoreService.applyAllSuggestions();
+    }
+
+    @Transactional
+    public void blacklistCard(Short id) {
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new CardNotFoundException(id));
+        card.setIsActive(false);
+        
+        // set to special to exclude from rarity score calculations and suggestions
+        card.setRarity(Card.Rarity.special);
+        cardRepository.save(card);
     }
 }

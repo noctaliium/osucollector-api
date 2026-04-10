@@ -9,6 +9,7 @@ public record UserCardDto(
         Short quantityNormal,
         Short quantityFoil,
         Mark mark,
+        Boolean favorite,
         LocalDateTime firstObtainedAt
 ) {
     public static UserCardDto from(UserCard userCard) {
@@ -17,6 +18,7 @@ public record UserCardDto(
                 userCard.getQuantityNormal(),
                 userCard.getQuantityFoil(),
                 userCard.getMark(),
+                userCard.getFavorite(),
                 userCard.getFirstObtainedAt()
         );
     }

@@ -17,8 +17,8 @@ public class RarityScoreService {
     private final CardRepository cardRepository;
 
     // Constants for score calc
-    private static final double PP_DIVISOR              = 2.0;
-    private static final int    PP_MAX                  = 15000;
+    private static final double PP_DIVISOR              = 1.5;
+    private static final int    PP_MAX                  = 50000;
     private static final double FOLLOWERS_DIVISOR       = 6.0;
     private static final int    FOLLOWERS_MAX           = 2000;
     private static final double MAPPING_FOL_DIVISOR     = 2.0;
@@ -26,10 +26,10 @@ public class RarityScoreService {
     private static final int    BADGE_PTS               = 100;
     private static final int    BADGES_MAX              = 500;
     private static final int    TITLE_PTS               = 800;
-    private static final double MAPS_MULTIPLIER         = 5.0;
+    private static final double MAPS_MULTIPLIER         = 10.0;
     private static final int    MAPS_MAX                = 2000;
     private static final double FIRST_PLACES_MULTIPLIER = 2.0;
-    private static final int    FIRST_PLACES_MAX        = 1500;
+    private static final int    FIRST_PLACES_MAX        = 1000;
 
     // Rarity ratios
     private static final double MYTHIC_RATIO   = 0.0025;

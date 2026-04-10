@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users/{userId}/cards")
@@ -13,10 +14,17 @@ import java.util.List;
 public class UserCardController {
 
     private final UserCardService userCardService;
-
+    
     @GetMapping
-    public ResponseEntity<List<UserCardDto>> getUserCollection(@PathVariable String userId) {
-        return ResponseEntity.ok(userCardService.getUserCollection(userId));
+    public ResponseEntity<Map<String, Object>> getUserCollection(
+            @PathVariable String userId,
+            @RequestParam(defaultValue = "0")    int page,
+            @RequestParam(defaultValue = "80")   int size,
+            @RequestParam(required = false)      String countryCode,
+            @RequestParam(required = false)      Boolean favorite) {
+        return ResponseEntity.ok(
+            userCardService.getUserCollection(userId, page, size, countryCode, favorite)
+        );
     }
 
     @GetMapping("/rarity/{rarity}")
@@ -60,10 +68,22 @@ public class UserCardController {
         return ResponseEntity.ok(userCardService.getUniqueCardCount(userId));
     }
 
+    @PatchMapping("/{cardId}/favorite")
+    public ResponseEntity<UserCardDto> toggleFavorite(
+            @PathVariable String userId,
+            @PathVariable Short cardId) {
+        return ResponseEntity.ok(userCardService.toggleFavorite(userId, cardId));
+    }
+
     @GetMapping("/{cardId}/rainbows")
     public ResponseEntity<List<RainbowCardDto>> getRainbowCards(
             @PathVariable String userId,
             @PathVariable Short cardId) {
         return ResponseEntity.ok(userCardService.getRainbowCards(userId, cardId));
+    }
+
+    @GetMapping("/countries")
+    public ResponseEntity<List<String>> getAvailableCountries(@PathVariable String userId) {
+        return ResponseEntity.ok(userCardService.getAvailableCountries(userId));
     }
 }

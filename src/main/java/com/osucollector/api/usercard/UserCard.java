@@ -41,6 +41,10 @@ public class UserCard {
     @Enumerated(EnumType.STRING)
     private Mark mark;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean favorite = false;
+
     @Builder.Default
     @Column(nullable = false)
     private LocalDateTime firstObtainedAt = LocalDateTime.now();

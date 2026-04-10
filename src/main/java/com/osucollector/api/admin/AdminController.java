@@ -2,26 +2,34 @@ package com.osucollector.api.admin;
 
 import com.osucollector.api.card.Card;
 import com.osucollector.api.card.CardDto;
+import com.osucollector.api.card.CardRepository;
 import com.osucollector.api.osu.OsuApiService;
 import com.osucollector.api.osu.OsuImportService;
+import com.osucollector.api.osu.OsuUserStats;
 import com.osucollector.api.pack.PackService;
 import com.osucollector.api.user.User;
 import com.osucollector.api.user.UserDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
+@Slf4j
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class AdminController {
 
     private final AdminService adminService;
+    private final AdminRepository adminRepository;
+    private final CardRepository cardRepository;
     private final OsuImportService osuImportService;
     private final OsuApiService osuApiService;
     private final SyncStatusService syncStatusService;
@@ -111,5 +119,47 @@ public class AdminController {
     public ResponseEntity<Void> forceNextRarity(@RequestParam Card.Rarity rarity) {
         packService.setForcedNextRarity(rarity);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/cards/{id}/blacklist")
+    public ResponseEntity<Void> blacklistCard(@PathVariable Short id) {
+        adminService.blacklistCard(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/import/player/{osuUserId}")
+    public ResponseEntity<Void> importSinglePlayer(@PathVariable Integer osuUserId) {
+        new Thread(() -> {
+            try {
+                OsuUserStats stats = osuApiService.fetchFullUserStats(osuUserId);
+                if (stats != null) osuImportService.saveCard(stats);
+            } catch (Exception e) {
+                log.warn("Failed to import player {}: {}", osuUserId, e.getMessage());
+            }
+        }).start();
+        return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping("/import/next-unranked")
+    public ResponseEntity<Void> importNextUnranked() {
+        new Thread(() -> {
+            try {
+                for (int page = 41; page <= 50; page++) {
+                    List<Map<String, Object>> ranking = osuApiService.fetchRankingPage(page);
+                    for (Map<String, Object> entry : ranking) {
+                        Integer osuUserId = ((Number) ((Map<?, ?>) entry.get("user")).get("id")).intValue();
+                        if (!cardRepository.existsByOsuUserId(osuUserId)) {
+                            OsuUserStats stats = osuApiService.fetchFullUserStats(osuUserId);
+                            if (stats != null) osuImportService.saveCard(stats);
+                            log.info("Imported replacement player: {}", stats.username());
+                            return;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to import next unranked: {}", e.getMessage());
+            }
+        }).start();
+        return ResponseEntity.accepted().build();
     }
 }

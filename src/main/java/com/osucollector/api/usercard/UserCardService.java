@@ -9,9 +9,14 @@ import com.osucollector.api.user.User;
 import com.osucollector.api.user.UserRepository;
 import com.osucollector.api.user.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.Map;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -22,13 +27,31 @@ public class UserCardService {
     private final CardRepository cardRepository;
     private final RainbowCardRepository rainbowCardRepository;
     
-    public List<UserCardDto> getUserCollection(String userId) {
-        return userCardRepository.findByUserId(userId)
-                .stream()
-                .map(UserCardDto::from)
-                .toList();
+    @Transactional(readOnly = true)
+    public Map<String, Object> getUserCollection(
+            String userId,
+            int page,
+            int size,
+            String countryCode,
+            Boolean favorite
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserCard> result = userCardRepository.findUserCollection(
+            userId,
+            countryCode,
+            favorite,
+            pageable
+        );
+
+        return Map.of(
+            "cards",       result.getContent().stream().map(UserCardDto::from).toList(),
+            "totalPages",  result.getTotalPages(),
+            "totalElements", result.getTotalElements(),
+            "currentPage", page
+        );
     }
 
+    @Transactional(readOnly = true)
     public List<UserCardDto> getUserCollectionByRarity(String userId, Card.Rarity rarity) {
         return userCardRepository.findByUserIdAndCardRarity(userId, rarity)
                 .stream()
@@ -36,6 +59,7 @@ public class UserCardService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<UserCardDto> getUserCollectionByGamemode(String userId, Card.Gamemode gamemode) {
         return userCardRepository.findByUserIdAndCardGamemode(userId, gamemode)
                 .stream()
@@ -43,6 +67,7 @@ public class UserCardService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<UserCardDto> getUserCollectionByMark(String userId, Mark mark) {
         return userCardRepository.findByUserIdAndMark(userId, mark)
                 .stream()
@@ -117,14 +142,30 @@ public class UserCardService {
         return UserCardDto.from(userCardRepository.save(userCard));
     }
 
+    @Transactional(readOnly = true)
     public long getUniqueCardCount(String userId) {
         return userCardRepository.countByUserId(userId);
     }
 
+    @Transactional
+    public UserCardDto toggleFavorite(String userId, Short cardId) {
+        UserCard userCard = userCardRepository
+                .findByUserIdAndCardId(userId, cardId)
+                .orElseThrow(() -> new UserCardNotFoundException(userId, cardId));
+        userCard.setFavorite(!userCard.getFavorite());
+        return UserCardDto.from(userCardRepository.save(userCard));
+    }
+
+    @Transactional(readOnly = true)
     public List<RainbowCardDto> getRainbowCards(String userId, Short cardId) {
         return rainbowCardRepository.findByOwnerIdAndCardId(userId, cardId)
                 .stream()
                 .map(RainbowCardDto::from)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getAvailableCountries(String userId) {
+        return userCardRepository.findDistinctCountryCodes(userId);
     }
 }
