@@ -54,6 +54,7 @@ public class PackService {
         Card.Rarity.rare,
         Card.Rarity.epic,
         Card.Rarity.legendary,
+        Card.Rarity.mythic,
         Card.Rarity.special
     );  
 

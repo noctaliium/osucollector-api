@@ -1,26 +1,27 @@
 package com.osucollector.api.user;
 
-import java.time.LocalDateTime;
 
 public record UserDto(
-        String id,
-        String username,
-        Integer osuUserId,
-        User.Role role,
-        Short stackedPacks,
-        Integer totalPacksOpened,
-        LocalDateTime lastTradeAt,
-        Integer coins
+        String     id,
+        String     username,
+        Integer    osuUserId,
+        User.Role  role,
+        Short      stackedPacks,
+        Integer    totalPacksOpened,
+        String     lastTradeAt,
+        String     lastPackTickAt,
+        Integer    coins
 ) {
     public static UserDto from(User user) {
         return new UserDto(
-                user.getId(),
+                user.getId().toString(),
                 user.getUsername(),
                 user.getOsuUserId(),
                 user.getRole(),
                 user.getStackedPacks(),
                 user.getTotalPacksOpened(),
-                user.getLastTradeAt(),
+                user.getLastTradeAt()     != null ? user.getLastTradeAt().toString()     : null,
+                user.getLastPackTickAt()  != null ? user.getLastPackTickAt().toString()  : null,
                 user.getCoins()
         );
     }
