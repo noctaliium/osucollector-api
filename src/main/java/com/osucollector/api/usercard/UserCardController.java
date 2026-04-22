@@ -86,4 +86,9 @@ public class UserCardController {
     public ResponseEntity<List<String>> getAvailableCountries(@PathVariable String userId) {
         return ResponseEntity.ok(userCardService.getAvailableCountries(userId));
     }
+
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Long>> getCollectionStats(@PathVariable String userId) {
+        return ResponseEntity.ok(userCardService.getCollectionStats(userId));
+    }
 }

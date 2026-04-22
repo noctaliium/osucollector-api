@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -167,5 +169,15 @@ public class UserCardService {
     @Transactional(readOnly = true)
     public List<String> getAvailableCountries(String userId) {
         return userCardRepository.findDistinctCountryCodes(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Long> getCollectionStats(String userId) {
+        return userCardRepository.findByUserId(userId)
+                .stream()
+                .collect(Collectors.groupingBy(
+                    uc -> uc.getCard().getRarity().name().toLowerCase(),
+                    Collectors.counting()
+                ));
     }
 }
